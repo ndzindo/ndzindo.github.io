@@ -1,28 +1,38 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $message = $_POST['message'];
+    // Get the form data
+    $name = strip_tags(trim($_POST["name"]));
+    $email = filter_var(trim($_POST["email"]), FILTER_SANITIZE_EMAIL);
+    $subject = trim($_POST["subject"]);
+    $message = trim($_POST["message"]);
 
-    // Validate inputs
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "Invalid email format";
+    // Validate the data
+    if (empty($name) || !filter_var($email, FILTER_VALIDATE_EMAIL) || empty($subject) || empty($message)) {
+        echo "Please complete all the fields correctly.";
         exit;
     }
 
-    $to = "dzindonedim@gmail.com"; // Your email address
-    $subject = "New Contact Form Submission";
-    $body = "You have received a new message from $name ($email):\n\n$message";
+    // Set the recipient email address.
+    $recipient = "your-email@example.com"; // Change this to your email
 
-    $headers = "From: $email";
+    // Set the email subject.
+    $email_subject = "New contact from $name: $subject";
 
-    // Send the email
-    if (mail($to, $subject, $body, $headers)) {
-        echo "OK"; // Signal success to the frontend
+    // Build the email content.
+    $email_content = "Name: $name\n";
+    $email_content .= "Email: $email\n\n";
+    $email_content .= "Message:\n$message\n";
+
+    // Set the email headers.
+    $email_headers = "From: $name <$email>";
+
+    // Send the email.
+    if (mail($recipient, $email_subject, $email_content, $email_headers)) {
+        echo "OK"; // Success
     } else {
-        echo "Error sending email"; // Signal error to the frontend
+        echo "Oops! Something went wrong, and we couldn't send your message.";
     }
 } else {
-    echo "Invalid request method";
+    echo "There was a problem with your submission. Please try again.";
 }
 ?>
